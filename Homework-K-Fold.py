@@ -57,4 +57,6 @@ fig = plt.figure(figsize=(25,25))
 fig = plot_decision_regions(X=X_test,y=y_test,clf=model,legend=2)
 
 plt.title(f"3-Class classification with SVM(C= {model.best_params_['C']} and gamma = {model.best_params_['gamma']})")
+plt.xlabel("Alcohol")
+plt.ylabel("Malic acid")
 plt.show()   

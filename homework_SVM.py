@@ -73,6 +73,8 @@ for grd, clf, lab in zip(itertools.product([0,1,2],repeat=2),model,labels): # pr
     accuracyModel[i] = round(clf.score(X_Validation,y_Validation),3)
     print( f"The accuracy of the model with C equal to {C[i]} is: {accuracyModel[i]}")
     plt.title(lab)
+    plt.xlabel("Alcohol")
+    plt.ylabel("Malic acid")
     i+=1
 plt.show()
 

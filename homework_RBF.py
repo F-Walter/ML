@@ -72,6 +72,8 @@ for grd, clf, lab in zip(itertools.product([0,1,2],repeat=2),model,labels): # pr
         accuracyModel[i]= round(model[i].score(X_Validation,y_Validation),3)
         print( f"The accuracy of the model with C equal to {C[i]} is: {accuracyModel[i]}")
         plt.title(lab)
+        plt.xlabel("Alcohol")
+        plt.ylabel("Malic acid")
         i+=1
 plt.show()
 
@@ -96,7 +98,7 @@ for key,value in accuracylist:
 
 model = SVC(C=C[bestC],kernel='rbf')
 model.fit(X_trainValidation,y_trainValidation) 
-print(f'The SVM built with C = {C[bestC]} has an accuracy on the test set up to: {model.score(X_test,y_test)}')
+print(f'The SVM built with C = {C[bestC]} has an accuracy on the test set up to: {round(model.score(X_test,y_test),3)}')
 '''
 15. Perform a grid search of the best parameters for an RBF kernel: we will
 now tune both gamma and C at the same time. Select an appropriate
@@ -111,7 +113,7 @@ for c in C:
         for g in gamma:
                 model= SVC(C=c,gamma=g,kernel='rbf')
                 model.fit(X_train,y_train)
-                currentValue = model.score(X_Validation,y_Validation)
+                currentValue = round(model.score(X_Validation,y_Validation),3)
                 print(f'The SVM built with C = {c} and gamma = {g} scored an accuracy on the validation set up to: {currentValue}')
                 if currentValue > optimalAccuracy:
                         optimalAccuracy = currentValue
@@ -137,6 +139,8 @@ print(f'The model scored on the validation an accuracy equal to: {round(bestMode
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
 plt.title(label[0])
+plt.xlabel("Alcohol")
+plt.ylabel("Malic acid")
 
 ax = plt.subplot(gs[1])
 bestModel = bestModel.fit(X_trainValidation,y_trainValidation)
@@ -146,5 +150,7 @@ print(f'The model scored on the test an accuracy equal to: {round(bestModel.scor
 handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
 plt.title(label[1])
+plt.xlabel("Alcohol")
+plt.ylabel("Malic acid")
 
 plt.show()   

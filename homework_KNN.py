@@ -66,7 +66,9 @@ for grd, clf, labels in zip(itertools.product([0, 1], repeat=2),
 
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
-
+    plt.xlabel("Alcohol")
+    plt.ylabel("Malic acid")
+    
     accuracyModel[i] = round(model[i].score(X_Validation,y_Validation),3)
     print( f"The accuracy of the model with k equal to {k[i]} is: {accuracyModel[i]}")
     i+=1
