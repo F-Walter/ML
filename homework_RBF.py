@@ -128,26 +128,23 @@ print(f'The model was created with C = {bestC} and gamma = {bestG}')
 gs = gridspec.GridSpec(1,2) #grid 3x3
 fig = plt.figure(figsize=(25,25)) # window to visualize the content of the plots
 
-label=f"3-Class classification on TEST set with SVM(C={bestC} gamma={bestG})"
+label=[f"3-Class classification on VALIDATION set with SVM(C={bestC} gamma={bestG})",f"3-Class classification on TEST set with SVM(C={bestC} gamma={bestG})"]
 
 ax = plt.subplot(gs[0])
 fig = plot_decision_regions(X=X_Validation, y=y_Validation, clf=bestModel, legend=0)
 print(f'The model scored on the validation an accuracy equal to: {round(bestModel.score(X_Validation,y_Validation),3)}')
   
-handles, label = ax.get_legend_handles_labels()
+handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
-
+plt.title(label[0])
 
 ax = plt.subplot(gs[1])
 bestModel = bestModel.fit(X_trainValidation,y_trainValidation)
 fig = plot_decision_regions(X=X_test, y=y_test, clf=bestModel, legend=0)
 print(f'The model scored on the test an accuracy equal to: {round(bestModel.score(X_test,y_test),3)}')
 
-handles, label = ax.get_legend_handles_labels()
+handles, labels = ax.get_legend_handles_labels()
 ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
-
-
-plt.title(lab)
-i+=1
+plt.title(label[1])
 
 plt.show()   
