@@ -104,41 +104,46 @@ range for both parameters. Train the model and score it on the validation
 set. Evaluate the best parameters on the test set. Plot the decision
 boundaries.
 '''
-from sklearn.model_selection import GridSearchCV
+bestC=-1
+bestG=-1
+optimalAccuracy =-1.0
+for c in C:
+        for g in gamma:
+                model= SVC(C=c,gamma=g,kernel='rbf')
+                model.fit(X_train,y_train)
+                currentValue = model.score(X_Validation,y_Validation)
+                print(f'The SVM built with C = {c} and gamma = {g} scored an accuracy on the validation set up to: {currentValue}')
+                if currentValue > optimalAccuracy:
+                        optimalAccuracy = currentValue
+                        bestC=c
+                        bestG=g
 
-# Dictionary with parameters names (string) as keys and lists of parameter settings to try as values
-param_grid={
-        'C': C,
-        'kernel': ['rbf'],
-        'gamma': gamma
-}
 
-model = GridSearchCV(SVC(),param_grid,n_jobs=-1,iid=True,cv=2)
 
-model.fit(X_train,y_train)
-print(f'The model was created with C = {model.best_params_["C"]} and gamma = {model.best_params_["gamma"]}')
+bestModel=SVC(C=bestC,gamma=bestG,kernel='rbf')
+bestModel.fit(X_train,y_train)
+print(f'The model was created with C = {bestC} and gamma = {bestG}')
 
 # Plotting decision regions
 gs = gridspec.GridSpec(1,2) #grid 3x3
 fig = plt.figure(figsize=(25,25)) # window to visualize the content of the plots
 
-labels=[]
-labels.append(f"3-Class classification on TEST set with SVM(C={model.best_params_['C']} gamma={model.best_params_['gamma']})")
-labels.append(f"3-Class classification on VALIDATION set with SVM(C={model.best_params_['C']} gamma={model.best_params_['gamma']})")
+label=f"3-Class classification on TEST set with SVM(C={bestC} gamma={bestG})"
 
 ax = plt.subplot(gs[0])
-fig = plot_decision_regions(X=X_Validation, y=y_Validation, clf=model, legend=0)
-print(f'The model scored on the validation an accuracy equal to: {round(model.score(X_Validation,y_Validation),3)}')
+fig = plot_decision_regions(X=X_Validation, y=y_Validation, clf=bestModel, legend=0)
+print(f'The model scored on the validation an accuracy equal to: {round(bestModel.score(X_Validation,y_Validation),3)}')
   
-handles, labels = ax.get_legend_handles_labels()
+handles, label = ax.get_legend_handles_labels()
 ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
 
-ax = plt.subplot(gs[1])
-clf = model.fit(X_trainValidation,y_trainValidation)
-fig = plot_decision_regions(X=X_test, y=y_test, clf=clf, legend=0)
-print(f'The model scored on the test an accuracy equal to: {round(model.score(X_test,y_test),3)}')
-handles, labels = ax.get_legend_handles_labels()
 
+ax = plt.subplot(gs[1])
+bestModel = bestModel.fit(X_trainValidation,y_trainValidation)
+fig = plot_decision_regions(X=X_test, y=y_test, clf=bestModel, legend=0)
+print(f'The model scored on the test an accuracy equal to: {round(bestModel.score(X_test,y_test),3)}')
+
+handles, label = ax.get_legend_handles_labels()
 ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
 
 
