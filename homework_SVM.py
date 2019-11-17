@@ -17,10 +17,10 @@ plt.show()
 
 from sklearn.model_selection import train_test_split
 #split in train+validation and test sets -> 70:30
-X_trainValidation,X_test, y_trainValidation, y_test = train_test_split(X_slice, y,test_size=0.30, random_state=1, stratify=y)
+X_trainValidation,X_test, y_trainValidation, y_test = train_test_split(X_slice, y,test_size=0.30, random_state=3, stratify=y)
 
 #split in train and validation sets in order to have eventually a percentage of  50:20:30 respectively for train,validation and test sets
-X_train,X_Validation,y_train,y_Validation = train_test_split(X_trainValidation,y_trainValidation,test_size=0.2857,random_state=1,stratify=y_trainValidation)
+X_train,X_Validation,y_train,y_Validation = train_test_split(X_trainValidation,y_trainValidation,test_size=0.2857,random_state=3,stratify=y_trainValidation)
 
 #Standardization of data
 from sklearn.preprocessing import StandardScaler
@@ -41,20 +41,47 @@ X_trainValidation=scaler.transform(X_trainValidation)
 C = [0.001, 0.01, 0.1, 1, 10, 100,1000]
 
 #from sklearn.svm import SVC
-from sklearn.svm import LinearSVC
+from sklearn.svm import SVC
 from mlxtend.plotting import plot_decision_regions
 import matplotlib.gridspec as gridspec
 import itertools
 
 accuracyModel = {} #dict of accuracy values linked to the clfs key:index value:accuracy
 
-labels=[] #vactor of labels for the plot
+labels=[] #vector of labels for the plot
 
 model=[]  # vector of the clfs (classifiers)
 
 for i in C : 
-    model.append(LinearSVC(C=i,max_iter=10**9)) #definition of the clfs
-    labels.append(f"3-Class classification with Linear-SVC(C= {i})")
+    model.append(SVC(C=i,kernel='linear',max_iter=10**9)) #definition of the clfs
+    labels.append(f"Decision regions for Linear-SVC with C={i}")
+
+#Decision boundaries
+gs = gridspec.GridSpec(3,3) #grid 3x3
+fig = plt.figure(figsize=(20,30)) # window to visualize the content of the plots
+
+
+i=0
+for grd, clf, lab in zip(itertools.product([0,1,2],repeat=2),model,labels): # product[a,b] repeat=2 => a,a a,b b,a b,b  #Cartesian product of input iterables. Equivalent to nested for-loops.
+    clf.fit(X_train, y_train)
+    ax = plt.subplot(gs[grd[0], grd[1]])
+    fig = plot_decision_regions(X=X_train, y=y_train, clf=clf, legend=0)
+    
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
+
+    plt.title(lab)
+    plt.xlabel("Alcohol")
+    plt.ylabel("Malic acid")
+    i+=1
+plt.show()
+####
+
+labels =[]
+
+for i in C : 
+    labels.append(f"3-Class classification with Linear-SVC(C={i})")
+
 
 
 gs = gridspec.GridSpec(3,3) #grid 3x3
@@ -97,7 +124,13 @@ for key,value in accuracylist:
         bestV = value
         bestC = key
 
-model = LinearSVC(C=bestC)
+model = SVC(C=bestC,kernel='linear',max_iter=10**9)
 model.fit(X_trainValidation, y_trainValidation) 
+fig = plt.figure(figsize=(20,30)) # window to visualize the content of the plots
+fig = plot_decision_regions(X=X_test, y=y_test, clf=model, legend=2)
+plt.title(f"Classification of the best Linear SVC(C = {C[bestC]}) on test set")
+plt.xlabel("Alcohol")
+plt.ylabel("Malic acid")
+plt.show()
 
-print(f'The SVM built with C = {C[bestC]} has an accuracy on the test set up to: {model.score(X_test,y_test)}')
+print(f'The SVM built with C = {C[bestC]} has an accuracy on the test set up to: {round(model.score(X_test,y_test),3)}')

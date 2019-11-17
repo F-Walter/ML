@@ -17,10 +17,10 @@ plt.show()
 
 from sklearn.model_selection import train_test_split
 #split in train+validation and test sets -> 70:30
-X_trainValidation,X_test, y_trainValidation, y_test = train_test_split(X_slice, y,test_size=0.30,random_state=1, stratify=y)
+X_trainValidation,X_test, y_trainValidation, y_test = train_test_split(X_slice, y,test_size=0.30,random_state=3, stratify=y)
 
 #split in train and validation sets in order to have eventually a percentage of  50:20:30 respectively for train,validation and test sets
-X_train,X_Validation,y_train,y_Validation = train_test_split(X_trainValidation,y_trainValidation,test_size=0.2857,random_state=1,stratify=y_trainValidation)
+X_train,X_Validation,y_train,y_Validation = train_test_split(X_trainValidation,y_trainValidation,test_size=0.2857,random_state=3,stratify=y_trainValidation)
 
 #Standardization of data
 from sklearn.preprocessing import StandardScaler
@@ -43,7 +43,7 @@ import matplotlib.gridspec as gridspec
 import itertools
 
 C = [0.001, 0.01, 0.1, 1, 10, 100,1000]
-gamma = [10**(-11),10**(-9),10**(-7),10**(-5),10**(-3),10**(-1),10]
+gamma = [10**(-8),10**(-7),10**(-6),10**(-5),10**(-4),10**(-3),10**(-2),10**(-1),10,100,1000]
 
 
 accuracyModel = {} #dict of accuracy values linked to the clfs key:index value:accuracy
@@ -52,8 +52,37 @@ labels=[] #vactor of labels for the plot
 
 model=[]  # vector of the clfs (classifiers)
 
+
+##################### Decision regions #####################
 for i in C : 
     model.append(SVC(C=i,kernel='rbf')) #definition of the clfs
+    labels.append(f"Decision regions with SVC(C= {i},kernel='rbf')")
+
+gs = gridspec.GridSpec(3,3) #grid 3x3
+fig = plt.figure(figsize=(20,30)) # window to visualize the content of the plots
+
+i=0
+for grd, clf, lab in zip(itertools.product([0,1,2],repeat=2),model,labels): # product[a,b] repeat=2 => a,a a,b b,a b,b  #Cartesian product of input iterables. Equivalent to nested for-loops.
+        
+        clf.fit(X_train, y_train)
+        ax = plt.subplot(gs[grd[0], grd[1]])
+        fig = plot_decision_regions(X=X_train, y=y_train, clf=clf, legend=0)
+
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
+
+        plt.title(lab)
+        plt.xlabel("Alcohol")
+        plt.ylabel("Malic acid")
+        i+=1
+plt.show()
+
+###############################################################
+
+
+labels=[]
+
+for i in C : 
     labels.append(f"3-Class classification with SVC(C= {i},kernel='rbf')")
 
 gs = gridspec.GridSpec(3,3) #grid 3x3
@@ -98,6 +127,13 @@ for key,value in accuracylist:
 
 model = SVC(C=C[bestC],kernel='rbf')
 model.fit(X_trainValidation,y_trainValidation) 
+fig = plt.figure(figsize=(20,30)) # window to visualize the content of the plots
+fig = plot_decision_regions(X=X_test, y=y_test, clf=model, legend=2)
+plt.title(f"Classification of the best Linear SVC(C = {C[bestC]}) on test set")
+plt.xlabel("Alcohol")
+plt.ylabel("Malic acid")
+plt.show()
+
 print(f'The SVM built with C = {C[bestC]} has an accuracy on the test set up to: {round(model.score(X_test,y_test),3)}')
 '''
 15. Perform a grid search of the best parameters for an RBF kernel: we will
@@ -106,6 +142,10 @@ range for both parameters. Train the model and score it on the validation
 set. Evaluate the best parameters on the test set. Plot the decision
 boundaries.
 '''
+print("##################################")
+print("GRID SEARCH")
+print("##################################")
+
 bestC=-1
 bestG=-1
 optimalAccuracy =-1.0

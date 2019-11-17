@@ -18,10 +18,10 @@ plt.show()
 
 from sklearn.model_selection import train_test_split
 #split in train+validation and test sets -> 70:30
-X_trainValidation,X_test, y_trainValidation, y_test = train_test_split(X_slice, y, test_size=0.30, random_state=1, stratify=y)
+X_trainValidation,X_test, y_trainValidation, y_test = train_test_split(X_slice, y, test_size=0.30, random_state=3, stratify=y)
 
 #split in train and validation sets in order to have eventually a percentage of  50:20:30 respectively for train,validation and test sets
-X_train,X_Validation,y_train,y_Validation = train_test_split(X_trainValidation,y_trainValidation, test_size=0.2857,random_state=1,stratify=y_trainValidation)
+X_train,X_Validation,y_train,y_Validation = train_test_split(X_trainValidation,y_trainValidation, test_size=0.2857,random_state=3,stratify=y_trainValidation)
 
 k = [1,3,5,7] #vector of K 
 
@@ -48,27 +48,50 @@ accuracyModel = {} #dict of accuracy values linked to the clfs key:index value:a
 model=[] # vectors of the clfs (classifiers)
 
 for i in k:
-    model.append((KNeighborsClassifier(n_neighbors=i))) #definition of the clfs
+    model.append((KNeighborsClassifier(n_neighbors=i,metric='euclidean'))) #definition of the clfs
+
+gs = gridspec.GridSpec(2, 2) #grid 2x2
+fig = plt.figure(figsize=(10,8)) # window to visualize the content of the plots
+
+for grd, clf, label in zip(itertools.product([0, 1], repeat=2),
+                        model,
+                        ["Decision regions for classifier: KNN(k = 1)","Decision regions for classifier: KNN(k = 3)"
+                        ,"Decision regions for classifier: KNN(k = 5)","Decision regions for classifier: KNN(k = 7)"]):
+    clf.fit(X_train,y_train)
+    ax = plt.subplot(gs[grd[0], grd[1]])
+
+    # Plot the decision boundary. For that, we will assign a color to each
+    fig=plot_decision_regions(X_train, y_train, clf=clf, legend=0)
+
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
+    plt.xlabel("Alcohol")
+    plt.ylabel("Malic acid")
+    plt.title(label)
+
+plt.show()
+
 
 i=0
 gs = gridspec.GridSpec(2, 2) #grid 2x2
 fig = plt.figure(figsize=(10,8)) # window to visualize the content of the plots
 
-for grd, clf, labels in zip(itertools.product([0, 1], repeat=2),
+for grd, clf, label in zip(itertools.product([0, 1], repeat=2),
                         model,
                         ["3-Class classification with KNN(k = 1)","3-Class classification with KNN(k = 3)"
                         ,"3-Class classification with KNN(k = 5)","3-Class classification with KNN(k = 7)"]):
     clf.fit(X_train,y_train)
     ax = plt.subplot(gs[grd[0], grd[1]])
 
-    # Plot the decision boundary. For that, we will assign a color to each
+    # Plot the decision boundary, and scatter the Validation set.
     fig=plot_decision_regions(X_Validation, y_Validation, clf=clf, legend=0)
 
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles,['Wine 1','Wine 2','Wine 3'],framealpha=0.3, scatterpoints=1)
     plt.xlabel("Alcohol")
     plt.ylabel("Malic acid")
-    
+    plt.title(label)
+
     accuracyModel[i] = round(model[i].score(X_Validation,y_Validation),3)
     print( f"The accuracy of the model with k equal to {k[i]} is: {accuracyModel[i]}")
     i+=1
@@ -81,6 +104,7 @@ valueK, accuracy = zip(*accuracylist) # unpack a list of pairs into two tuples o
 plt.plot(k, accuracy,'bo--') # plot the accuracy values obtained with respect to the value of K
 plt.ylabel('Accuracy level')
 plt.xlabel('k')
+plt.title("Accuracy levels with different K")
 plt.show()
 
 #pick the best K and evaluate the model performance on the test
@@ -89,11 +113,16 @@ bestV = 0
 
 #search of optimum value for K
 for key,value in accuracylist:
-    if(value>bestV):
+    if(value>=bestV):
         bestV = value
         bestK = key
 
-model = KNeighborsClassifier(n_neighbors=k[bestK])
+model = KNeighborsClassifier(n_neighbors=k[bestK],metric='euclidean')
 model.fit(X_trainValidation, y_trainValidation) 
-
+fig = plt.figure(figsize=(20,30)) # window to visualize the content of the plots
+fig = plot_decision_regions(X=X_test, y=y_test, clf=model, legend=2)
+plt.title(f"Classification of the best KNN(k = {k[bestK]}) on test set.")
+plt.xlabel("Alcohol")
+plt.ylabel("Malic acid")
+plt.show()
 print(f'The KNN model with k = {k[bestK]} has an accuracy on the test set up to: {round(model.score(X_test,y_test),3)}')
